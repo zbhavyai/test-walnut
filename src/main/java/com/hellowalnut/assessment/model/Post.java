@@ -1,57 +1,60 @@
 package com.hellowalnut.assessment.model;
 
-import java.io.Serializable;
 import java.util.List;
 
-import lombok.AllArgsConstructor;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.ForeignKey;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
+import javax.persistence.Table;
+
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+/**
+ * Represents a blog post
+ */
+@Entity
+@Table(name = "post")
 @Getter
 @Setter
-@NoArgsConstructor
-@AllArgsConstructor
-public class Post implements Serializable {
-    /**
-     * ID of post
-     */
+public class Post {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "post_id")
     private int id;
 
-    /**
-     * Author name of the post
-     */
+    @Column(name = "author")
     private String author;
 
-    /**
-     * ID of the author of the post
-     */
+    @Column(name = "author_id")
     private int authorId;
 
-    /**
-     * Number of likes on the post
-     */
+    @Column(name = "likes_count")
     private long likes;
 
-    /**
-     * Popularity of the post
-     */
+    @Column(name = "popularity")
     private double popularity;
 
-    /**
-     * Number of times post read
-     */
+    @Column(name = "reads_count")
     private long reads;
 
-    /**
-     * Tags of the post
-     */
-    private List<String> tags;
+    @ManyToMany
+    @JoinTable(name = "post_tag", joinColumns = @JoinColumn(name = "post_id", referencedColumnName = "post_id", foreignKey = @ForeignKey(name = "fk_posttag_post")), inverseJoinColumns = @JoinColumn(name = "tag_id", referencedColumnName = "tag_id", foreignKey = @ForeignKey(name = "fk_posttag_tag")))
+    private List<Tag> tags;
 
-    /**
-     * Get the popularity of the post
-     */
-    public String getPopularity() {
-        return String.format("%.2f", popularity);
+    public String[] getTags() {
+        String[] tags = new String[this.tags.size()];
+
+        for (int i = 0; i < this.tags.size(); i++) {
+            tags[i] = this.tags.get(i).getTagName();
+        }
+
+        return tags;
     }
 }
