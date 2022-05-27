@@ -16,9 +16,6 @@ import javax.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
 
-/**
- * Represents a blog post
- */
 @Entity
 @Table(name = "post")
 @Getter
@@ -45,7 +42,16 @@ public class Post {
     private long reads;
 
     @ManyToMany
-    @JoinTable(name = "post_tag", joinColumns = @JoinColumn(name = "post_id", referencedColumnName = "post_id", foreignKey = @ForeignKey(name = "fk_posttag_post")), inverseJoinColumns = @JoinColumn(name = "tag_id", referencedColumnName = "tag_id", foreignKey = @ForeignKey(name = "fk_posttag_tag")))
+    @JoinTable(
+            name = "post_tag",
+            joinColumns = @JoinColumn(
+                    name = "post_id",
+                    referencedColumnName = "post_id",
+                    foreignKey = @ForeignKey(name = "fk_posttag_post")),
+            inverseJoinColumns = @JoinColumn(
+                    name = "tag_id",
+                    referencedColumnName = "tag_id",
+                    foreignKey = @ForeignKey(name = "fk_posttag_tag")))
     private List<Tag> tags;
 
     public String[] getTags() {
