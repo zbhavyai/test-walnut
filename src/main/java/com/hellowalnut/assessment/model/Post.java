@@ -19,21 +19,11 @@ public class Post {
 
     private long reads;
 
-    // private List<Tag> tags;
     private String[] tags;
-
-    //    public String[] getTags() {
-    //        String[] tags = new String[this.tags.size()];
-    //
-    //        for (int i = 0; i < this.tags.size(); i++) {
-    //            tags[i] = this.tags.get(i).getTagName();
-    //        }
-    //
-    //        return tags;
-    //    }
 
     @Override
     public boolean equals(Object obj) {
+
         if(this == obj) {
             return true;
         }
@@ -49,5 +39,11 @@ public class Post {
         }
 
         return false;
+    }
+
+
+    @Override
+    public int hashCode() {
+        return this.id;
     }
 }
