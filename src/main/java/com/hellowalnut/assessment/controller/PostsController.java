@@ -1,5 +1,8 @@
 package com.hellowalnut.assessment.controller;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
@@ -60,6 +63,32 @@ public class PostsController {
             e.printStackTrace();
         }
 
-        return ResponseEntity.status(HttpStatus.OK).body(uniquePosts);
+        // create list to sort
+        List<Post> fetchedPosts = new ArrayList<>(uniquePosts);
+
+        switch(sortBy)
+        {
+        case "id": {
+            fetchedPosts.sort((o1, o2) -> o1.getId().compareTo(o2.getId()));
+        }; break;
+
+        case "reads": {
+            fetchedPosts.sort((o1, o2) -> o1.getReads().compareTo(o2.getReads()));
+        }; break;
+
+        case "likes": {
+            fetchedPosts.sort((o1, o2) -> o1.getLikes().compareTo(o2.getLikes()));
+        }; break;
+
+        case "popularity": {
+            fetchedPosts.sort((o1, o2) -> o1.getPopularity().compareTo(o2.getPopularity()));
+        }; break;
+        }
+
+        if(sortDirection.equals("desc")) {
+            Collections.reverse(fetchedPosts);
+        }
+
+        return ResponseEntity.status(HttpStatus.OK).body(fetchedPosts);
     }
 }

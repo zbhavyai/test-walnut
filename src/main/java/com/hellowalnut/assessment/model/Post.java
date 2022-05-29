@@ -7,17 +7,17 @@ import lombok.Setter;
 @Setter
 public class Post {
 
-    private int id;
+    private Integer id;
 
     private String author;
 
-    private int authorId;
+    private Integer authorId;
 
-    private long likes;
+    private Long likes;
 
-    private double popularity;
+    private Double popularity;
 
-    private long reads;
+    private Long reads;
 
     private String[] tags;
 
