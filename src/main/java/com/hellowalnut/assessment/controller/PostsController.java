@@ -18,30 +18,30 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.hellowalnut.assessment.model.Post;
+import com.hellowalnut.assessment.model.Posts;
 import com.hellowalnut.assessment.response.ErrorResponse;
 import com.hellowalnut.assessment.response.SuccessResponse;
 import com.hellowalnut.assessment.service.PostService;
 
 @CrossOrigin
 @RestController
-@RequestMapping("api/")
+@RequestMapping("/api")
 public class PostsController {
 
-    @GetMapping(path = "ping")
+    @GetMapping(path = "/ping", produces = "application/json")
     public ResponseEntity<?> ping() {
         return ResponseEntity.status(HttpStatus.OK).body(new SuccessResponse(true));
     }
 
-    @GetMapping(path = "posts")
+    @GetMapping(path = "/posts", produces = "application/json")
     public ResponseEntity<?> getPosts(
             @RequestParam(name = "tags", required = false, defaultValue = "") String suppliedTags,
             @RequestParam(name = "sortBy", required = false, defaultValue = "id") String sortBy,
             @RequestParam(name = "direction", required = false, defaultValue = "asc") String sortDirection) {
 
-        if(suppliedTags.length() == 0) {
+        if (suppliedTags.length() == 0) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorResponse("Tags parameter is required"));
         }
-
 
         String[] listOfTags = suppliedTags.split(",");
 
@@ -51,12 +51,12 @@ public class PostsController {
         Set<Post> uniquePosts = ConcurrentHashMap.newKeySet();
 
         // submit the job to different threads for each tag
-        for(int i=0; i<listOfTags.length; i++) {
+        for (int i = 0; i < listOfTags.length; i++) {
             PostService ps = new PostService(uniquePosts, listOfTags[i]);
 
             try {
                 executorServicePool.execute(ps);
-            } catch(Exception e) {
+            } catch (Exception e) {
                 e.printStackTrace();
             }
         }
@@ -65,42 +65,44 @@ public class PostsController {
         try {
             executorServicePool.shutdown();
             executorServicePool.awaitTermination(5000, TimeUnit.SECONDS);
-        } catch(Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
 
         // create list to sort
         List<Post> fetchedPosts = new ArrayList<>(uniquePosts);
 
-        switch(sortBy)
-        {
-        case "id": {
+        switch (sortBy) {
+        case "id":
             fetchedPosts.sort((o1, o2) -> o1.getId().compareTo(o2.getId()));
-        }; break;
+            break;
 
-        case "reads": {
+        case "reads":
             fetchedPosts.sort((o1, o2) -> o1.getReads().compareTo(o2.getReads()));
-        }; break;
+            break;
 
-        case "likes": {
+        case "likes":
             fetchedPosts.sort((o1, o2) -> o1.getLikes().compareTo(o2.getLikes()));
-        }; break;
+            break;
 
-        case "popularity": {
+        case "popularity":
             fetchedPosts.sort((o1, o2) -> o1.getPopularity().compareTo(o2.getPopularity()));
-        }; break;
+            break;
 
-        default: {
+        default:
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorResponse("sortBy parameter is invalid"));
         }
-        }
 
-        if(sortDirection.equals("desc")) {
+        if (sortDirection.equals("desc")) {
             Collections.reverse(fetchedPosts);
-        } else if(!sortDirection.equals("asc")) {
+        } else if (!sortDirection.equals("asc")) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorResponse("direction parameter is invalid"));
         }
 
-        return ResponseEntity.status(HttpStatus.OK).body(fetchedPosts);
+        // wrap it in posts object
+        Posts posts = new Posts();
+        posts.setPosts(fetchedPosts);
+
+        return ResponseEntity.status(HttpStatus.OK).body(posts);
     }
 }
