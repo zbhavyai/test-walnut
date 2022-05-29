@@ -1,35 +1,33 @@
 package com.hellowalnut.assessment.service;
 
+import java.util.Set;
+
 import org.springframework.web.reactive.function.client.WebClient;
 
+import com.hellowalnut.assessment.model.Post;
 import com.hellowalnut.assessment.model.Posts;
 
 import reactor.core.publisher.Mono;
 
 public class PostService implements Runnable {
 
-    private String baseUrl = "https://api.hatchways.io/assessment/blog/posts?tag=";
+    private static String baseUrl = "https://api.hatchways.io/assessment/blog/posts?tag=";
 
-    private WebClient client;
+    private static WebClient client = WebClient.create();
 
     private String tag;
 
-    private Posts posts;
+    private Set<Post> uniquePosts;
 
 
-    public PostService(String tag) {
-        this.client = WebClient.create();
+    public PostService(Set<Post> posts, String tag) {
+        this.uniquePosts = posts;
         this.tag = tag.trim();
     }
 
     public void fetchPosts() {
-        Mono<Posts> monoPosts = this.client.get().uri(this.baseUrl + this.tag).retrieve().bodyToMono(Posts.class);
-        this.posts = monoPosts.block();
-        System.out.printf("Fetched %d records for tag=\'%s\'%n", this.posts.getPosts().size(), this.tag);
-    }
-
-    public Posts getPosts() {
-        return this.posts;
+        Mono<Posts> monoPosts = PostService.client.get().uri(PostService.baseUrl + this.tag).retrieve().bodyToMono(Posts.class);
+        this.uniquePosts.addAll(monoPosts.block().getPosts());
     }
 
     @Override

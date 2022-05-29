@@ -1,9 +1,7 @@
 package com.hellowalnut.assessment.controller;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -32,39 +30,34 @@ public class PostsController {
 
     @GetMapping(path = "posts")
     public ResponseEntity<?> getPosts(
-            @RequestParam(name = "tags", required = true) String suppliedTags) {
+            @RequestParam(name = "tags", required = true) String suppliedTags,
+            @RequestParam(name = "sortBy", required = false, defaultValue = "id") String sortBy,
+            @RequestParam(name = "direction", required = false, defaultValue = "asc") String sortDirection) {
 
         String[] listOfTags = suppliedTags.split(",");
 
         ExecutorService executorServicePool = Executors.newCachedThreadPool();
 
-        List<PostService> postServiceList = new ArrayList<>();
+        // store only unique posts in thread safe way
+        Set<Post> uniquePosts = ConcurrentHashMap.newKeySet();
 
+        // submit the job to different threads for each tag
         for(int i=0; i<listOfTags.length; i++) {
-            PostService ps = new PostService(listOfTags[i]);
-            postServiceList.add(ps);
+            PostService ps = new PostService(uniquePosts, listOfTags[i]);
 
             try {
                 executorServicePool.execute(ps);
-            }
-
-            catch(Exception e) {
+            } catch(Exception e) {
                 e.printStackTrace();
             }
         }
 
+        // wait for fetching results
         try {
             executorServicePool.shutdown();
             executorServicePool.awaitTermination(5000, TimeUnit.SECONDS);
-        }
-        catch(Exception e) {
+        } catch(Exception e) {
             e.printStackTrace();
-        }
-
-        Set<Post> uniquePosts = new HashSet<>();
-
-        for(PostService ps : postServiceList) {
-            uniquePosts.addAll(ps.getPosts().getPosts());
         }
 
         return ResponseEntity.status(HttpStatus.OK).body(uniquePosts);
