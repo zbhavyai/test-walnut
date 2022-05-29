@@ -9,6 +9,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import com.hellowalnut.assessment.exception.PostsException;
@@ -19,6 +20,7 @@ import com.hellowalnut.assessment.resource.PostResource;
 @Service
 public class PostService {
 
+    @Cacheable("posts")
     public Posts getPosts(String suppliedTags, String sortBy, String sortDirection) throws PostsException {
 
         String[] listOfTags = suppliedTags.split(",");
