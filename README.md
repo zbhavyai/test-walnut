@@ -2,6 +2,16 @@
 
 Backend Assessment - Blog Posts
 
+## Testing deployed backend
+
+The backend is deployed on Heroku at `https://test-walnut.herokuapp.com`. The API can tested like below:
+
+```bash
+$ curl 'https://test-walnut.herokuapp.com/api/posts?tags=tech&sortBy=likes&direction=desc'
+```
+
+**Note**: please give upto ten seconds to get the first response, as the apps deployed on Heroku free tier goes to sleep after about an hour of inactivity.
+
 ## How to build and run
 
 1. The following are required to build and run this project:
