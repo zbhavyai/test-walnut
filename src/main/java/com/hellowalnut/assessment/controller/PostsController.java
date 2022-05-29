@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.hellowalnut.assessment.model.Post;
+import com.hellowalnut.assessment.response.ErrorResponse;
 import com.hellowalnut.assessment.response.SuccessResponse;
 import com.hellowalnut.assessment.service.PostService;
 
@@ -33,9 +34,14 @@ public class PostsController {
 
     @GetMapping(path = "posts")
     public ResponseEntity<?> getPosts(
-            @RequestParam(name = "tags", required = true) String suppliedTags,
+            @RequestParam(name = "tags", required = false, defaultValue = "") String suppliedTags,
             @RequestParam(name = "sortBy", required = false, defaultValue = "id") String sortBy,
             @RequestParam(name = "direction", required = false, defaultValue = "asc") String sortDirection) {
+
+        if(suppliedTags.length() == 0) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorResponse("Tags parameter is required"));
+        }
+
 
         String[] listOfTags = suppliedTags.split(",");
 
@@ -83,10 +89,16 @@ public class PostsController {
         case "popularity": {
             fetchedPosts.sort((o1, o2) -> o1.getPopularity().compareTo(o2.getPopularity()));
         }; break;
+
+        default: {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorResponse("sortBy parameter is invalid"));
+        }
         }
 
         if(sortDirection.equals("desc")) {
             Collections.reverse(fetchedPosts);
+        } else if(!sortDirection.equals("asc")) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorResponse("direction parameter is invalid"));
         }
 
         return ResponseEntity.status(HttpStatus.OK).body(fetchedPosts);
